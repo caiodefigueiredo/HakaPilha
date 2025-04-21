@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define SUCCESSO 0
 #define FRACASSO 1
@@ -16,7 +17,7 @@ int unstack(ppStack pp);
 
 // **** "Operações de manipulação" ****
 // Empilha um elemento 
-int push(ppStack pp, int element);
+int push(ppStack pp, char *element);
 // Desempilha um elemento
 int pop(ppStack pp);
 // Remove todos os dados da pilha mantendo o descritor alocado.

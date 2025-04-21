@@ -6,10 +6,13 @@ int main() {
     
     pStack P = NULL;
     int ret=0;
-    int valor=0;
-    int *arg;
-    int rlines=0;  
+    int rlines=0; 
+    char buffer[100]; 
+    int leitura=0;
+    char *ptr;
+    ptr = buffer;
 
+    printf("Informe a quantidade de elementos:\n");
     if (!scanf("%d", &rlines)) {
         return 1;
     }
@@ -17,31 +20,35 @@ int main() {
         return 1;
     }
 
-    arg = (int*) malloc(sizeof(int)*(rlines));
-
-
-    if (!arg){
-        printf("Erro de alocação.\n");
-    }
-
-
     ret = stack(&P,rlines);
-    printf("Criacao da pilha %d\n", ret);
+    //printf("Criacao da pilha %d\n", ret);
+    fflush(stdin);
 
-    for (int i=0; i<rlines;i++){
-        scanf("%d", &arg[i]);
-        ret = push(&P,arg[i]);
-        printf("Push na pilha %d\n", ret);
-        printf("Push na pilha valor %d\n", arg[i]);
-    }
+
+    printf("Digite %d dados genericos (inteiros, float ou string), um por linha:\n", rlines);
+    while (leitura < rlines) {
+        if (!fgets(buffer, sizeof(buffer), stdin)) {
+            printf("Erro ao ler a entrada.\n");
+            return 1;
+        }
+        if (strlen(buffer) == 0){
+            return 1;
+        }
+        ret = push(&P,ptr);
+        //printf("Push na pilha %d\n", ret);
+        if (ret == 0){
+            leitura++;
+        }        
+
+    }    
     
-    ret = top(P);
-
-    printf("Topo na pilha %d\n", ret);
+    ret = top(P);    
+    
+    //printf("Topo na pilha %s\n", ret);
 
     for (int i=0; i<rlines;i++) {
         ret = pop(&P);
-        printf("Pop na pilha %d\n", ret);
+        //printf("Pop na pilha %s\n", ret);
     }
     printf("Pop na pilha completado\n");
     ret = unstack(&P);
