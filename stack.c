@@ -23,7 +23,7 @@ int push(ppStack pp, char *element){
     if ((*pp)->capacidade >= (*pp)->tamanho){
         return FRACASSO;
     }        
-    novo = malloc(sizeof(novo));
+    novo = malloc(sizeof(No));
     if(novo){      
         ehnumero = strtol(element, &testeInt, 10);
         if (*testeInt == '\0' || *testeInt == '\n'){
@@ -132,6 +132,7 @@ int pop(ppStack pp){
                 break;
             case 2:
                 printf("Elemento retirado: %s\n", remover->dado.stringValue); 
+                free(remover->dado.stringValue); 
                 break;
             default: 
                 printf("Sem elemento na pilha\n"); 
@@ -181,7 +182,8 @@ int unstack(ppStack pp){
                     printf("Elemento limpado: %.2f\n", remover->dado.floatValue);
                     break;
                 case 2:
-                    printf("Elemento limpado: %s\n", remover->dado.stringValue); 
+                    printf("Elemento limpado: %s\n", remover->dado.stringValue);
+                    free(remover->dado.stringValue);
                     break;
                 default: 
                     printf("Sem elemento na pilha\n"); 
@@ -208,7 +210,7 @@ int unstack(ppStack pp){
 int cleanStack(ppStack pp){
     No *remover=NULL;
     
-    if ((*pp)->capacidade = 0){
+    if ((*pp)->capacidade == 0){
         return SUCCESSO;
     }
     
