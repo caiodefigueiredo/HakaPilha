@@ -20,6 +20,8 @@ int main() {
         return 1;
     }
 
+    getchar();
+
     ret = stack(&P,rlines);
     //printf("Criacao da pilha %d\n", ret);
     fflush(stdin);
@@ -31,9 +33,13 @@ int main() {
             printf("Erro ao ler a entrada.\n");
             return 1;
         }
+
+
         if (strlen(buffer) == 0){
             return 1;
         }
+
+
         ret = push(&P,ptr);
         //printf("Push na pilha %d\n", ret);
         if (ret == 0){
