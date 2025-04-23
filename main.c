@@ -1,21 +1,34 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "stack_pub.h"    // declara SUCCESS, FAIL e protótipos
-#include "stack_pri.h" // define No, PE
+#include "main.h"
 
 int main() {
     pStack P = NULL;
     int ret, rlines;
     char buffer[100];
 
-    // Quantidade de elementos
-    printf("Informe a quantidade de elementos:\n");
-    if (scanf("%d", &rlines) != 1 || rlines <= 0) {
-        fprintf(stderr, "Quantidade inválida.\n");
-        return 1;
+        rlines = 0;
+    while (1) {
+        printf("Informe a quantidade de elementos:\n");
+        char line[100];
+        if (!fgets(line, sizeof(line), stdin)) {
+            fprintf(stderr, "Erro ao ler a entrada.\n");
+            return 1;
+        }
+        // remove '\n'
+        line[strcspn(line, "\n")] = '\0';
+
+        char *endptr;
+        long val = strtol(line, &endptr, 10);
+        // pular espaços/tabs após o número
+        while (*endptr == ' ' || *endptr == '\t') endptr++;
+
+        if (endptr[0] == '\0' && val > 0) {
+            rlines = (int)val;
+            break;  // linha válida: apenas dígitos + '\0'
+        } else {
+            fprintf(stderr, "Quantidade inválida. Informe um inteiro positivo.\n");
+        }
     }
-    getchar(); // consome '\n'
+
 
     printf("Digite %d dados genéricos (inteiros, float ou string), um por linha:\n", rlines);
 
@@ -37,47 +50,27 @@ int main() {
         ret = push(P, buffer);
         if (ret == SUCCESS) {
             leitura++;
-        }
-        // se ret == FAIL, a própria função push já imprime a mensagem
+        } // se ret == FAIL, a própria função push já imprime a mensagem
     }
 
     // Exibe topo
     printf("Elemento do topo:\n");
-    if (P->type == 0) {
-        int out;
-        if (top(P, &out) == SUCCESS) printf("%d\n", out);
-    } else if (P->type == 1) {
-        float out;
-        if (top(P, &out) == SUCCESS) printf("%.2f\n", out);
-    } else {
-        char *out;
-        if (top(P, &out) == SUCCESS) {
-            printf("%s\n", out);
-            free(out);
-        }
+    char *temp_out = NULL;
+    if (top(P, &temp_out) == SUCCESS) {
+        printf("%s\n", temp_out);
+        free(temp_out);
     }
 
     // Desempilha todos
     for (int i = 0; i < rlines; i++) {
-        if (P->type == 0) {
-            int out;
-            if (pop(P, &out) == SUCCESS)
-                printf("Elemento retirado: %d\n", out);
-        } else if (P->type == 1) {
-            float out;
-            if (pop(P, &out) == SUCCESS)
-                printf("Elemento retirado: %.2f\n", out);
-        } else {
-            char *out;
-            if (pop(P, &out) == SUCCESS) {
-                printf("Elemento retirado: %s\n", out);
-                free(out);
-            }
+        char *out = NULL;
+        if (pop(P, &out) == SUCCESS) {
+            printf("Elemento retirado: %s\n", out);
+            free(out);
         }
     }
     printf("Pop na pilha completado\n");
 
-    // Destrutor
     ret = unstack(&P);
     printf("Flush na pilha %d\n", ret);
 

@@ -2,7 +2,7 @@
 #ifndef STACK_PRI_H
 #define STACK_PRI_H
 
-#include <stdlib.h>
+#include "stack_pub.h"
 
 typedef struct no {
     union {

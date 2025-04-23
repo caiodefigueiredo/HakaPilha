@@ -4,6 +4,7 @@
 #include "stack_pub.h"
 #include "stack_pri.h"
 
+// construtor e destrutor mantidos iguais
 int stack(ppStack pp, int size, int sizedata) {
     if (!pp || size <= 0 || sizedata <= 0)
         return FAIL;
@@ -34,13 +35,13 @@ int unstack(ppStack pp) {
     return SUCCESS;
 }
 
+// push mantém a detecção original de int / float / string
 int push(pStack p, void *element) {
     if (!p || !element || p->capacidade >= p->tamanho)
         return FAIL;
 
     char *elem = (char *)element;
-    char *testeInt = NULL;
-    char *testeFloat = NULL;
+    char *testeInt = NULL, *testeFloat = NULL;
     long ehnumero;
     float ehfloat;
     No *novo = NULL;
@@ -49,6 +50,7 @@ int push(pStack p, void *element) {
     if (testeInt == elem || (*testeInt != '\0' && *testeInt != '\n')) {
         ehfloat = strtof(elem, &testeFloat);
         if (testeFloat == elem || (*testeFloat != '\0' && *testeFloat != '\n')) {
+            // string
             if (p->type == 99) p->type = 2;
             else if (p->type != 2) {
                 printf("Elemento nao permitido. Informe outro elemento:\n");
@@ -56,13 +58,10 @@ int push(pStack p, void *element) {
             }
             novo = malloc(sizeof(No));
             if (!novo) return FAIL;
-            novo->dado.stringValue = malloc(strlen(elem) + 1);
-            if (!novo->dado.stringValue) {
-                free(novo);
-                return FAIL;
-            }
-            strcpy(novo->dado.stringValue, elem);
+            novo->dado.stringValue = strdup(elem);
+            if (!novo->dado.stringValue) { free(novo); return FAIL; }
         } else {
+            // float
             if (p->type == 99) p->type = 1;
             else if (p->type != 1) {
                 printf("Elemento nao permitido. Informe outro elemento:\n");
@@ -73,6 +72,7 @@ int push(pStack p, void *element) {
             novo->dado.floatValue = ehfloat;
         }
     } else {
+        // inteiro
         if (p->type == 99) p->type = 0;
         else if (p->type != 0) {
             printf("Elemento nao permitido. Informe outro elemento:\n");
@@ -89,29 +89,41 @@ int push(pStack p, void *element) {
     return SUCCESS;
 }
 
+// pop: sempre devolve string (usuario faz printf("%s"))
 int pop(pStack p, void *element) {
     if (!p || !element || p->capacidade == 0)
         return FAIL;
     No *rem = p->topo;
+    char *out_str;
+    char buffer[64];
+
+    // converte para string
     if (p->type == 0) {
-        *(int *)element = rem->dado.intValue;
+        snprintf(buffer, sizeof(buffer), "%d", rem->dado.intValue);
+        out_str = strdup(buffer);
     } else if (p->type == 1) {
-        *(float *)element = rem->dado.floatValue;
+        snprintf(buffer, sizeof(buffer), "%f", rem->dado.floatValue);
+        out_str = strdup(buffer);
     } else {
-        *(char **)element = strdup(rem->dado.stringValue);
-        free(rem->dado.stringValue);
+        out_str = strdup(rem->dado.stringValue);
     }
+
+    // libera nó
     p->topo = rem->anterior;
+    if (p->type == 2) free(rem->dado.stringValue);
     free(rem);
     p->capacidade--;
     if (p->capacidade == 0)
         p->type = 99;
+
+    // devolve string ao usuário
+    *(char **)element = out_str;
     return SUCCESS;
 }
 
+// same as before
 int cleanStack(pStack p) {
-    if (!p)
-        return FAIL;
+    if (!p) return FAIL;
     while (p->capacidade > 0) {
         No *rem = p->topo;
         p->topo = rem->anterior;
@@ -124,16 +136,25 @@ int cleanStack(pStack p) {
     return SUCCESS;
 }
 
+// top: idem a pop, mas sem remover do topo
 int top(pStack p, void *out) {
     if (!p || !out || p->capacidade == 0 || !p->topo)
         return FAIL;
+
     No *aux = p->topo;
+    char *out_str;
+    char buffer[64];
+
     if (p->type == 0) {
-        *(int *)out = aux->dado.intValue;
+        snprintf(buffer, sizeof(buffer), "%d", aux->dado.intValue);
+        out_str = strdup(buffer);
     } else if (p->type == 1) {
-        *(float *)out = aux->dado.floatValue;
+        snprintf(buffer, sizeof(buffer), "%f", aux->dado.floatValue);
+        out_str = strdup(buffer);
     } else {
-        *(char **)out = strdup(aux->dado.stringValue);
+        out_str = strdup(aux->dado.stringValue);
     }
+
+    *(char **)out = out_str;
     return SUCCESS;
 }
