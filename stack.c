@@ -1,244 +1,139 @@
-#include "stack_pri.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "stack_pub.h"
+#include "stack_pri.h"
 
-
-
-// "Construtor": aloca memória e inicializa as variáveis
-int stack(ppStack pp, int size){
-    *pp = (pStack)malloc(sizeof(struct PE));
+int stack(ppStack pp, int size, int sizedata) {
+    if (!pp || size <= 0 || sizedata <= 0)
+        return FAIL;
+    *pp = (pStack)malloc(sizeof(PE));
+    if (!*pp)
+        return FAIL;
     (*pp)->topo = NULL;
     (*pp)->tamanho = size;
     (*pp)->capacidade = 0;
     (*pp)->type = 99;
-    return SUCCESSO;
+    (*pp)->sizedata = sizedata;
+    return SUCCESS;
 }
 
-int push(ppStack pp, char *element){
-    char *testeInt=NULL;
-    char *testeFloat=NULL;
+int unstack(ppStack pp) {
+    if (!pp || !*pp)
+        return FAIL;
+    No *atual = (*pp)->topo;
+    while (atual) {
+        No *prox = atual->anterior;
+        if ((*pp)->type == 2 && atual->dado.stringValue)
+            free(atual->dado.stringValue);
+        free(atual);
+        atual = prox;
+    }
+    free(*pp);
+    *pp = NULL;
+    return SUCCESS;
+}
+
+int push(pStack p, void *element) {
+    if (!p || !element || p->capacidade >= p->tamanho)
+        return FAIL;
+
+    char *elem = (char *)element;
+    char *testeInt = NULL;
+    char *testeFloat = NULL;
     long ehnumero;
     float ehfloat;
-    No *novo=NULL;
+    No *novo = NULL;
 
-    if ((*pp)->capacidade >= (*pp)->tamanho){
-        return FRACASSO;
-    }        
-    novo = malloc(sizeof(No));
-    if(novo){      
-        ehnumero = strtol(element, &testeInt, 10);
-        if (*testeInt == '\0' || *testeInt == '\n'){
-            if ((*pp)->type==99){
-                (*pp)->type=0;
+    ehnumero = strtol(elem, &testeInt, 10);
+    if (testeInt == elem || (*testeInt != '\0' && *testeInt != '\n')) {
+        ehfloat = strtof(elem, &testeFloat);
+        if (testeFloat == elem || (*testeFloat != '\0' && *testeFloat != '\n')) {
+            if (p->type == 99) p->type = 2;
+            else if (p->type != 2) {
+                printf("Elemento nao permitido. Informe outro elemento:\n");
+                return FAIL;
             }
-            else{
-                if ((*pp)->type==1 || (*pp)->type==2){
-                    printf("\nElemento nao permitido. Informe outro elemento:\n");
-                    return FRACASSO;
-                }
-            }            
-            //printf("\ninteiro\n");
-            novo->dado.intValue = (int)ehnumero;
-        }
-        else {
-            ehfloat = strtof(element, &testeFloat);
-            if (*testeFloat == '\0' || *testeFloat == '\n'){
-                if ((*pp)->type==99){
-                    (*pp)->type=1;
-                }
-                else{
-                    if ((*pp)->type==0 || (*pp)->type==2){
-                        printf("\nElemento nao permitido. Informe outro elemento:\n");
-                        return FRACASSO;
-                    }
-                }
-                //printf("\nfloat\n");
-                novo->dado.floatValue = ehfloat;
+            novo = malloc(sizeof(No));
+            if (!novo) return FAIL;
+            novo->dado.stringValue = malloc(strlen(elem) + 1);
+            if (!novo->dado.stringValue) {
+                free(novo);
+                return FAIL;
             }
-            else{
-                if ((*pp)->type==99 || (*pp)->type==2) {
-                    if ((*pp)->type==99){
-                        (*pp)->type=2;
-                    }
-                    novo->dado.stringValue = malloc(strlen(element) + 1);
-                    if (!novo->dado.stringValue) {
-                        printf("Erro de alocacao.\n");
-                        return FRACASSO;
-                    }
-                    //printf("\nchar\n");
-                    strcpy(novo->dado.stringValue,element);
-                    novo->dado.stringValue[strcspn(novo->dado.stringValue, "\n")] = '\0';
-                }
-                else{
-                    printf("\nElemento nao permitido. Informe outro elemento:\n");
-                    return FRACASSO;
-                }                
+            strcpy(novo->dado.stringValue, elem);
+        } else {
+            if (p->type == 99) p->type = 1;
+            else if (p->type != 1) {
+                printf("Elemento nao permitido. Informe outro elemento:\n");
+                return FAIL;
             }
+            novo = malloc(sizeof(No));
+            if (!novo) return FAIL;
+            novo->dado.floatValue = ehfloat;
         }
-
-        novo->anterior=(*pp)->topo;
-        (*pp)->capacidade+= 1;
-        (*pp)->topo = novo;
-    }
-    else{
-        return FRACASSO;
-    }
-    return SUCCESSO;
-}
-
-// **** "Operações de acesso" ****
-// Retorna uma cópia do dado do topo
-int top(pStack p){
-    No *leitura=NULL;
-    leitura = p->topo;
-    if (!leitura){
-        return FRACASSO;
-    }
-    else{
-        switch (p->type) {
-            case 0:
-                printf("Elemento do topo: %d\n", leitura->dado.intValue);
-                break;
-            case 1:
-                printf("Elemento do topo: %.2f\n", leitura->dado.floatValue);
-                break;
-            case 2:
-                printf("Elemento do topo: %s\n", leitura->dado.stringValue); 
-                break;
-            default: 
-                printf("Sem elemento na pilha\n"); 
-        }   
-        return SUCCESSO;
-    }
-
-}
-
-// Desempilha um elemento
-int pop(ppStack pp){
-    No *remover=NULL;
-    char valor[100];
-    
-    if ((*pp)->capacidade == 0){
-        return FRACASSO;
-    }
-    
-    if((*pp)->topo){
-        remover = (*pp)->topo;
-        switch ((*pp)->type) {
-            case 0:
-                printf("Elemento retirado: %d\n", remover->dado.intValue);
-                break;
-            case 1:
-                printf("Elemento retirado f: %.2f\n", remover->dado.floatValue);
-                break;
-            case 2:
-                printf("Elemento retirado: %s\n", remover->dado.stringValue); 
-                free(remover->dado.stringValue); 
-                break;
-            default: 
-                printf("Sem elemento na pilha\n"); 
-        }   
-        //valor = remover->dado;
-        (*pp)->topo = remover->anterior;
-        (*pp)->capacidade-= 1;        
-        free(remover);
-        if ((*pp)->capacidade == 0){
-            (*pp)->type = 99;
-            (*pp)->capacidade = 0;
-            (*pp)->topo = NULL;
+    } else {
+        if (p->type == 99) p->type = 0;
+        else if (p->type != 0) {
+            printf("Elemento nao permitido. Informe outro elemento:\n");
+            return FAIL;
         }
+        novo = malloc(sizeof(No));
+        if (!novo) return FAIL;
+        novo->dado.intValue = (int)ehnumero;
     }
-    else{
-        return FRACASSO;
-    }
-    return SUCCESSO;
+
+    novo->anterior = p->topo;
+    p->topo = novo;
+    p->capacidade++;
+    return SUCCESS;
 }
 
-// "Destrutor": libera memória da estrutura
-int unstack(ppStack pp){
-    No *remover=NULL;
-    //printf("teste1\n");
-    //printf("teste2 %d\n",(*pp)->capacidade);
-    if ((*pp)->capacidade == 0){
-        (*pp)->type = 99;
-        (*pp)->capacidade = 0;
-        (*pp)->topo = NULL;
-
-        //printf("teste3\n");
-        free(*pp);
-        (*pp) = NULL;
-        //printf("teste4\n");
-        return SUCCESSO;
+int pop(pStack p, void *element) {
+    if (!p || !element || p->capacidade == 0)
+        return FAIL;
+    No *rem = p->topo;
+    if (p->type == 0) {
+        *(int *)element = rem->dado.intValue;
+    } else if (p->type == 1) {
+        *(float *)element = rem->dado.floatValue;
+    } else {
+        *(char **)element = strdup(rem->dado.stringValue);
+        free(rem->dado.stringValue);
     }
-    //printf("teste5\n");
-    if((*pp)->capacidade > 0){
-        //printf("teste6\n");
-        for (int i = (*pp)->capacidade; i>0;i--){            
-            remover = (*pp)->topo;
-            switch ((*pp)->type) {
-                case 0:
-                    printf("Elemento limpado: %d\n", remover->dado.intValue);
-                    break;
-                case 1:
-                    printf("Elemento limpado: %.2f\n", remover->dado.floatValue);
-                    break;
-                case 2:
-                    printf("Elemento limpado: %s\n", remover->dado.stringValue);
-                    free(remover->dado.stringValue);
-                    break;
-                default: 
-                    printf("Sem elemento na pilha\n"); 
-            }               
-            (*pp)->topo = remover->anterior;
-            (*pp)->capacidade-= 1;        
-            free(remover);
-        }
-        
-
-    }
-
-    (*pp)->type = 99;
-    (*pp)->capacidade = 0;
-    (*pp)->topo = NULL;
-    //printf("teste7\n");
-    free(*pp);
-    (*pp) = NULL;
-    //printf("teste8\n");
-    return SUCCESSO;
+    p->topo = rem->anterior;
+    free(rem);
+    p->capacidade--;
+    if (p->capacidade == 0)
+        p->type = 99;
+    return SUCCESS;
 }
 
-// Remove todos os dados da pilha mantendo o descritor alocado.
-int cleanStack(ppStack pp){
-    No *remover=NULL;
-    
-    if ((*pp)->capacidade == 0){
-        return SUCCESSO;
+int cleanStack(pStack p) {
+    if (!p)
+        return FAIL;
+    while (p->capacidade > 0) {
+        No *rem = p->topo;
+        p->topo = rem->anterior;
+        if (p->type == 2 && rem->dado.stringValue)
+            free(rem->dado.stringValue);
+        free(rem);
+        p->capacidade--;
     }
-    
-    if((*pp)->capacidade > 0){
-        for (int i = (*pp)->capacidade; i>0;i--){            
-            remover = (*pp)->topo;
-            switch ((*pp)->type) {
-                case 0:
-                    printf("Elemento limpado: %d\n", remover->dado.intValue);
-                    break;
-                case 1:
-                    printf("Elemento limpado: %.2f\n", remover->dado.floatValue);
-                    break;
-                case 2:
-                    printf("Elemento limpado: %s\n", remover->dado.stringValue); 
-                    break;
-                default: 
-                    printf("Sem elemento na pilha\n"); 
-            }               
-            (*pp)->topo = remover->anterior;
-            (*pp)->capacidade-= 1;        
-            free(remover);            
-        }
-        (*pp)->type = 99;
-        (*pp)->capacidade = 0;
-        (*pp)->topo = NULL;
-    }
-    return SUCCESSO;
-
+    p->type = 99;
+    return SUCCESS;
 }
 
+int top(pStack p, void *out) {
+    if (!p || !out || p->capacidade == 0 || !p->topo)
+        return FAIL;
+    No *aux = p->topo;
+    if (p->type == 0) {
+        *(int *)out = aux->dado.intValue;
+    } else if (p->type == 1) {
+        *(float *)out = aux->dado.floatValue;
+    } else {
+        *(char **)out = strdup(aux->dado.stringValue);
+    }
+    return SUCCESS;
+}

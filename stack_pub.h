@@ -1,30 +1,24 @@
-#ifndef STACK_H
-#define STACK_H
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#define SUCCESSO 0
-#define FRACASSO 1
+#define SUCCESS 0
+#define FAIL 1
 
 typedef struct PE *pStack, **ppStack;
 
 // "Construtor": aloca memória e inicializa as variáveis
-int stack(ppStack pp, int size);
+int stack(ppStack pp, int size, int sizedata);
 // "Destrutor": libera memória da estrutura
 int unstack(ppStack pp);
 
 // **** "Operações de manipulação" ****
 // Empilha um elemento 
-int push(ppStack pp, char *element);
+int push(pStack p, void *element);
 // Desempilha um elemento
-int pop(ppStack pp);
+int pop(pStack p, void *element);
 // Remove todos os dados da pilha mantendo o descritor alocado.
-int cleanStack(ppStack pp);
+int cleanStack(pStack p);
 
 // **** "Operações de acesso" ****
 // Retorna uma cópia do dado do topo
-int top(pStack p);
-
-#endif
+int top(pStack p, void *top);
