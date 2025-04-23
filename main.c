@@ -47,6 +47,7 @@ int main() {
         }
         buffer[strcspn(buffer, "\n")] = '\0';
 
+        
         ret = push(P, buffer);
         if (ret == SUCCESS) {
             leitura++;
